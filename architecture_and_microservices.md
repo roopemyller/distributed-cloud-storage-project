@@ -33,37 +33,26 @@
         * Size
         * Owner
         * Timestamps
-        * Sharing permissions
 
-* Sync service
+* Sync service NOT PRIORITY
     * Auto background sync between local & cloud
     * Detect changes to files
     * Trigger upload/download to match states
     * Using threading for tasks
 
+
 **How does the services communicate?**
 
-* API calls? FastAPI?
-    * Fine for simplicity (according to ChatGPT)
-* gRPC
-    * Ideal for distributed system (according to ChatGPT)
+* API calls with FastAPI
 
 **Database** (for users, metadata, etc.)
 
-* PostgreSQL (recommended by ChatGPT)
-    * Production-grade
-    * Reliable
-* SQLite?
-    * Easier
-    * Doesn't scale well
+* PostgreSQL
 
 **File Storage** (for the files, posing as the "cloud storage")
 
 Options:
-* Local Disk (Simple, fast in dev, not scalable) (Recommended by chatgpt for this project)
-* MinIO (Realistic, scalable, setup needed)
-* AWS S3 (Real-world, reliable, costs)
-* Firebase Storage (Simple, Google lock-in?)
+* Local Disk
 
 ---
 ### System Architecture
@@ -72,10 +61,10 @@ Options:
                      ↓                          ↓
                             API Calls
                                   ↓
-        ┌────────────┬────────────┬─────────────┬────────────┐
-        │ Auth Svc   │ File Svc   │ Metadata Svc│ Sync Svc   │
-        └────────────┴────────────┴─────────────┴────────────┘
-                     ↓                          ↓
+        ┌────────────┬────────────┬──────────────┬────────────┐
+        │  Auth Svc  │  File Svc  │ Metadata Svc │  Sync Svc  │
+        └────────────┴────────────┴──────────────┴────────────┘
+                     ↓                           ↓
                      DB                  Local File Storage
 ---
 ### How it works
@@ -89,4 +78,3 @@ Case: User wants to upload a file
     * Auth Service verifies the JWT token
     * Metadata service saves file info to database
     * File service stores the file to local disk or object storage (posing as the cloud storage)
-
