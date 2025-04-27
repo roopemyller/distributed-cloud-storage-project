@@ -1,6 +1,6 @@
 import typer
 import requests
-from utils import save_token
+from utils import save_token, remove_token
 
 app = typer.Typer()
 SERVER = "http://localhost:5000" # Replace with REAL server URL
@@ -41,3 +41,14 @@ def login(username: str, password: str):
         typer.echo(f"User {username} logged in successfully.")
     else:
         typer.echo(f"Failed to log in: {response.text}")
+
+# Logout user and remove token
+@app.command()
+def logout():
+    if NOSERVER:
+        typer.echo("Logging out user.")
+        return
+
+    remove_token()
+    typer.echo("User logged out successfully.")
+    return

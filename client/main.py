@@ -7,6 +7,7 @@ app = typer.Typer()
 
 app.command()(auth.register)
 app.command()(auth.login)
+app.command()(auth.logout)
 
 app.command()(file.upload)
 app.command()(file.download)
