@@ -9,8 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from models.user import User
-from database import get_db
+from ...models.user import User
+from ...database import get_db
 
 # Load environment variables
 load_dotenv()

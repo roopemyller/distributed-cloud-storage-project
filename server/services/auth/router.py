@@ -15,7 +15,7 @@ from .services import (
     UserResponse
 )
 
-from database import get_db
+from ...database import get_db
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
