@@ -15,7 +15,7 @@ def register(username: str, email: str, password: str):
         typer.echo(f"Registering user {username}.")
         return
 
-    payload = {"username": username, "password": password}
+    payload = {"username": username, "email": email, "password": password}
     response = requests.post(f"{SERVER}/auth/register", json=payload)
     if response.ok:
         typer.echo("User registered successfully.")
@@ -30,7 +30,7 @@ def login(username: str, password: str):
         typer.echo(f"Login user {username}.")
         return
 
-    payload = {"username": username, "email": email, "password": password}
+    payload = {"username": username, "password": password}
     response = requests.post(f"{SERVER}/auth/login", json=payload)
     if response.ok:
         token = response.json().get("token")
