@@ -4,10 +4,10 @@ import os
 from utils import load_token
 
 app = typer.Typer()
-SERVER = "http://localhost:5000" # Replace with REAL server URL
+SERVER = "http://localhost:8000" # Replace with REAL server URL
 TOKEN_FILE = ".token"
 
-NOSERVER = True # client dev phase
+NOSERVER = False # client dev phase
 
 def get_auth_headers():
     token = load_token()
