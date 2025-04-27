@@ -30,8 +30,11 @@ class Database:
         Base.metadata.create_all(self.engine)
 
     def get_session(self):
-        with Session(self.engine) as session:
+        session = Session(self.engine)
+        try:
             yield session
+        finally:
+            session.close()
 
     @classmethod
     def get_db(cls):
