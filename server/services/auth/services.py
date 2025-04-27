@@ -9,8 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from server.models.user import User
-from server.database import get_db
+from models.user import User
+from database import get_db
 
 # Load environment variables
 load_dotenv()
@@ -45,15 +45,19 @@ class UserResponse(BaseModel):
 
 # Helper functions
 def verify_password(plain_password, hashed_password):
+    """Verify a plain password against a hashed password."""
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
+    """Hash a password using bcrypt."""
     return pwd_context.hash(password)
 
 def get_user(db: Session, username: str):
+    """Retrieve a user from the database by username."""
     return db.query(User).filter(User.username == username).first()
 
 def create_user(db: Session, user: UserCreate):
+    """Create a new user in the database."""
     db_user = User(
         username=user.username,
         email=user.email,
@@ -66,6 +70,7 @@ def create_user(db: Session, user: UserCreate):
     return db_user
 
 def authenticate_user(db: Session, username: str, password: str):
+    """Authenticate a user by username and password."""
     user = get_user(db, username)
     if not user:
         return False
@@ -74,6 +79,7 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Create a JWT access token."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now() + expires_delta
@@ -84,6 +90,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Get the current user from the token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

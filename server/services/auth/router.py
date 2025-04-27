@@ -15,7 +15,7 @@ from .services import (
     UserResponse
 )
 
-from server.database import get_db
+from database import get_db
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
@@ -23,6 +23,7 @@ router = APIRouter()
 
 @router.post('/login', response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Authenticate a user and return an access token."""
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -38,9 +39,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 @router.post('/register', response_model=UserResponse)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user."""
     db_user = create_user(db, user)
     return db_user
 
 @router.get('/me', response_model=UserResponse)
 async def get_user_me(current_user = Depends(get_current_user)):
+    """Get the current authenticated user."""
     return current_user

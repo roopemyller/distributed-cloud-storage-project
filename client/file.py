@@ -18,27 +18,30 @@ def get_auth_headers():
 
 # Upload file to the "cloud" storage
 @app.command()
-def upload(file_path: str):
+def upload(file_path: str, save_name: str=typer.Option(None, "--save-name", "-s", help="Name to save the file as in the cloud.")):
     if NOSERVER:
         typer.echo(f"Uploading file '{file_path}'.")
         return
 
-    headers = get_auth_headers()
-
     if not os.path.exists(file_path):
         typer.echo(f"File {file_path} does not exist.")
         raise typer.Exit()
+    
+    headers = get_auth_headers()
 
-    files = {"file": open(file_path, "rb")}
-    response = requests.post(f"{SERVER}/files/upload", files=files, headers=headers)
+    final_name = save_name if save_name else os.path.basename(file_path)
+
+    with open(file_path, "rb") as f:
+        files = {"file": (final_name, f, "application/octet-stream")}
+        response = requests.post(f"{SERVER}/files/upload", files=files, headers=headers)
     if response.ok:
-        typer.echo("File uploaded successfully.")
+        typer.echo(f"File uploaded successfully as '{final_name}'.")
     else:
         typer.echo(f"Failed to upload file: {response.text}")
 
 # Download file from the "cloud" storage
 @app.command()
-def download(file_name: str, save_path: str="."):
+def download(file_name: str, save_path: str=typer.Option(".", "--save-path", "-p", help="Path to save the downloaded file.")):
     if NOSERVER:
         typer.echo(f"Downloading file '{file_name}' to '{save_path}'.")
         return
@@ -46,7 +49,7 @@ def download(file_name: str, save_path: str="."):
     headers = get_auth_headers()
 
     params = {"file_name": file_name}
-    response = requests.get(f"{SERVER}/files/download", params=params, headers=headers)
+    response = requests.get(f"{SERVER}/file/download", params=params, headers=headers)
     if response.ok:
         file_save_path = os.path.join(save_path, file_name)
         with open(file_save_path, "wb") as f:
@@ -66,7 +69,7 @@ def delete(file_name: str):
     headers = get_auth_headers()
 
     params = {"file_name": file_name}
-    response = requests.delete(f"{SERVER}/files/delete", params=params, headers=headers)
+    response = requests.delete(f"{SERVER}/file/delete", params=params, headers=headers)
     if response.ok:
         typer.echo(f"File {file_name} deleted successfully.")
     else:
@@ -81,7 +84,7 @@ def list():
 
     headers = get_auth_headers()
 
-    response = requests.get(f"{SERVER}/files/list", headers=headers)
+    response = requests.get(f"{SERVER}/file/list", headers=headers)
     if response.ok:
         files = response.json()
         if files:
