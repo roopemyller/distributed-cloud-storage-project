@@ -2,17 +2,16 @@ from typing import Annotated
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Query
 from .services import auth_router, file_router
-from sqlmodel import Session
 from .utils import Database
+from .models.models import Base
 
 db = Database()
 
 @asynccontextmanager
 async def lifespan(app):
-    db.create_db_and_tables()
+    # Use SQLAlchemy Base metadata
+    Base.metadata.create_all(bind=db.engine)
     yield
-
-SessionDep = Annotated[Session, Depends(db.get_session)]
 
 # Create app
 app = FastAPI(lifespan = lifespan)

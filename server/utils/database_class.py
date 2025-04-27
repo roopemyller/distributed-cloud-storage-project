@@ -1,8 +1,10 @@
-# server/utils/database_helpers.py
 import os
 from dotenv import load_dotenv
-from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
+
+Base = declarative_base()
 
 class Database:
 
@@ -25,7 +27,7 @@ class Database:
         self._initialized = True
 
     def create_db_and_tables(self):
-        SQLModel.metadata.create_all(self.engine)
+        Base.metadata.create_all(self.engine)
 
     def get_session(self):
         session = Session(self.engine)
@@ -34,9 +36,11 @@ class Database:
         finally:
             session.close()
 
-    def get_db(self):
+    @classmethod
+    def get_db(cls):
         """Get a database session."""
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        instance = cls() # Create an instance of the Database
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=instance.engine)
         db = SessionLocal()
         try:
             yield db
