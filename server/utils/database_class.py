@@ -28,8 +28,11 @@ class Database:
         SQLModel.metadata.create_all(self.engine)
 
     def get_session(self):
-        with Session(self.engine) as session:
+        session = Session(self.engine)
+        try:
             yield session
+        finally:
+            session.close()
 
     def get_db(self):
         """Get a database session."""
