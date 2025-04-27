@@ -9,7 +9,7 @@ NOSERVER = True # client dev phase
 
 # Register user
 @app.command()
-def register(username: str, password: str):
+def register(username: str, email: str, password: str):
 
     if NOSERVER:
         typer.echo(f"Registering user {username}.")
@@ -24,7 +24,7 @@ def register(username: str, password: str):
 
 # Login user and save token
 @app.command()
-def login(username: str, email: str, password: str):
+def login(username: str, password: str):
 
     if NOSERVER:
         typer.echo(f"Login user {username}.")
