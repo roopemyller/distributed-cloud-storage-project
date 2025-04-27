@@ -7,9 +7,10 @@ from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from pydantic import BaseModel
 
-from ...models.user import User
+from ...models import User
 from ...utils import Database
 
 # Load environment variables
