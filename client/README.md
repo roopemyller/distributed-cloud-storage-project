@@ -19,6 +19,6 @@ or
 
 `pip install -e .`
 
-### Help with cloudcli
+### Help with cloud cli app
 
-`cloudcli --help`
+`cloud --help`

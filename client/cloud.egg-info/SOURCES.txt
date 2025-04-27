@@ -1,0 +1,12 @@
+README.md
+auth.py
+file.py
+main.py
+setup.py
+utils.py
+cloud.egg-info/PKG-INFO
+cloud.egg-info/SOURCES.txt
+cloud.egg-info/dependency_links.txt
+cloud.egg-info/entry_points.txt
+cloud.egg-info/requires.txt
+cloud.egg-info/top_level.txt
