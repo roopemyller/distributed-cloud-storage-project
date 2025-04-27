@@ -24,13 +24,13 @@ def register(username: str, password: str):
 
 # Login user and save token
 @app.command()
-def login(username: str, password: str):
+def login(username: str, email: str, password: str):
 
     if NOSERVER:
         typer.echo(f"Login user {username}.")
         return
 
-    payload = {"username": username, "password": password}
+    payload = {"username": username, "email": email, "password": password}
     response = requests.post(f"{SERVER}/auth/login", json=payload)
     if response.ok:
         token = response.json().get("token")
