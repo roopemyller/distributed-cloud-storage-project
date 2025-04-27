@@ -3,9 +3,9 @@ import requests
 from utils import save_token
 
 app = typer.Typer()
-SERVER = "http://localhost:5000" # Replace with REAL server URL
+SERVER = "http://localhost:8000" # Replace with REAL server URL
 
-NOSERVER = True # client dev phase
+NOSERVER = False # client dev phase
 
 # Register user
 @app.command()
