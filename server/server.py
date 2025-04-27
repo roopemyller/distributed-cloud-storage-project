@@ -1,9 +1,9 @@
 from typing import Annotated
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Query
-from services import auth_router
+from .services.auth.router import router as auth_router
 from sqlmodel import Session
-from utils import init_db, create_db_and_tables, get_session
+from .utils import init_db, create_db_and_tables, get_session
 
 # Database setup
 engine = init_db()
