@@ -42,5 +42,3 @@ async def upload(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
-
-# Rest of your routes remain the same
