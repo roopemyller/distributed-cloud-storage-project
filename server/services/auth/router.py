@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from sqlalchemy.orm import Session
+from ...utils import Database
 
 from .services import (
     authenticate_user, 
@@ -15,14 +16,12 @@ from .services import (
     UserResponse
 )
 
-from database import get_db
-
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 router = APIRouter()
 
 @router.post('/login', response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(Database.get_db)):
     """Authenticate a user and return an access token."""
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
@@ -38,7 +37,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post('/register', response_model=UserResponse)
-async def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(user: UserCreate, db: Session = Depends(Database.get_db)):
     """Register a new user."""
     db_user = create_user(db, user)
     return db_user

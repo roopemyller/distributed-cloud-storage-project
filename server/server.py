@@ -3,17 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Query
 from .services import auth_router, file_router
 from sqlmodel import Session
-from .utils import init_db, create_db_and_tables, get_session
+from .utils import Database
 
-# Database setup
-engine = init_db()
+db = Database()
 
 @asynccontextmanager
 async def lifespan(app):
-    create_db_and_tables(engine)
+    db.create_db_and_tables()
     yield
 
-SessionDep = Annotated[Session, Depends(get_session)]
+SessionDep = Annotated[Session, Depends(db.get_session)]
 
 # Create app
 app = FastAPI(lifespan = lifespan)
