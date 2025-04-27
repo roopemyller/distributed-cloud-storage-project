@@ -31,9 +31,9 @@ def login(username: str, password: str):
         return
 
     payload = {"username": username, "password": password}
-    response = requests.post(f"{SERVER}/auth/login", json=payload)
+    response = requests.post(f"{SERVER}/auth/login", data=payload)
     if response.ok:
-        token = response.json().get("token")
+        token = response.json().get("access_token")
         if not token:
             typer.echo("No token received.")
             return
