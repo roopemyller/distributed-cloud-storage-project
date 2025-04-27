@@ -6,7 +6,7 @@ def create_test_jwt(
     user_id: str = "test_user_123",
     email: str = "test@example.com",
     roles: list = ["user"],
-    expires_delta: int = 60,  # minutes
+    expires_delta: int = 60,
     algorithm: str = "HS256"
 ):
     # Set expiration time
@@ -18,8 +18,6 @@ def create_test_jwt(
         "email": email,
         "roles": roles,
         "exp": expire,
-        "iat": datetime.datetime.utcnow(),
-        # Add any other claims you need for testing
         "name": "Test User",
         "org_id": "test_org_456"
     }
@@ -38,8 +36,4 @@ test_token = create_test_jwt(
     roles=["admin", "user"]
 )
 
-print(f"Test Token: {test_token}")
-
-# Verify it works by decoding
-decoded = jwt.decode(test_token, secret_key, algorithms=["HS256"])
-print(f"Decoded Token: {decoded}")
+print(f"\n\nTest Token: {test_token}\n\n")

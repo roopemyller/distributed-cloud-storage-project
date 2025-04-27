@@ -18,12 +18,12 @@ async def upload(
 ):
     token = credentials.credentials
 
-    if is_token_expired:
+    if is_token_expired(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"}
-        )
+    )
 
     user_data = get_token_payload(token)
     

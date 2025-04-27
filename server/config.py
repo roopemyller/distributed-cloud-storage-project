@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DATABASE_URL: str = "postgresql://user:root@localhost:5432/postgres"
-    UPLOAD_FOLDER: str = "./uploads"
+    UPLOAD_FOLDER: str = "./cloud"
     
     class Config:
         env_file = ".env"

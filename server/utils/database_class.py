@@ -39,7 +39,7 @@ class Database:
     @classmethod
     def get_db(cls):
         """Get a database session."""
-        instance = cls() # Create an instance of the Database
+        instance = cls()
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=instance.engine)
         db = SessionLocal()
         try:

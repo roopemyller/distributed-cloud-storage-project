@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from pydantic import BaseModel
 
-from server.models.user import User
+from server.models import User
 from server.utils import Database, check_token_validity, decode_token
 from server.config import settings
 
