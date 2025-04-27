@@ -1,13 +1,38 @@
-# main.py
-from fastapi import FastAPI
-from server.services.init import auth_router, file_router
-from server.models.user import Base
-from server.database import engine
+import os
+from dotenv import load_dotenv
+from typing import Annotated
+from contextlib import asynccontextmanager
+from fastapi import Depends, FastAPI, HTTPException, Query
+from .services import auth_router, file_router
+from sqlmodel import Field, Session, SQLModel, create_engine, select
+from .models import File, User
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Load env
+load_dotenv()
 
-app = FastAPI()
+# Database setup
+postgres_url = os.getenv("DATABASE_URL")
+engine = create_engine(postgres_url, echo=True)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables(engine)
+    yield
+
+def get_session(engine):
+    with Session(engine) as session:
+        yield session
+
+SessionDep = Annotated[Session, Depends(get_session)]
+
+# Create app
+app = FastAPI(lifespan = lifespan)
 app.include_router(auth_router, prefix='/auth', tags=['Authentication'])
 app.include_router(file_router, prefix='/files', tags=['Files'])
+
+def create_db_and_tables(engine):
+    SQLModel.metadata.create_all(engine)
+
+@app.get("/")
+async def read_root():
+    return {"msg": "Hello World"}
