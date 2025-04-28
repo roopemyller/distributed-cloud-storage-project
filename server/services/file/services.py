@@ -1,6 +1,7 @@
 # services/file/services.py
 from fastapi import UploadFile, HTTPException
 from pydantic import BaseModel
+from datetime import datetime
 import os
 from typing import Dict, Any
 
@@ -13,7 +14,14 @@ class FileUploadResponse(BaseModel):
     size: int
 
 class FileDownload(BaseModel):
-    filename: str
+    file_name: str
+
+class FileListResponse(BaseModel):
+    id: int
+    name: str
+    size: int
+    timestamp: datetime
+ 
 
 async def upload_file(file: UploadFile, user_data: Dict[str, Any]) -> FileUploadResponse:
     try:

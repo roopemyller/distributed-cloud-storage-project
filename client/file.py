@@ -33,7 +33,7 @@ def upload(file_path: str, save_name: str=typer.Option(None, "--save-name", "-s"
 
     with open(file_path, "rb") as f:
         files = {"file": (final_name, f, "application/octet-stream")}
-        response = requests.post(f"{SERVER}/files/upload", files=files, headers=headers)
+        response = requests.post(f"{SERVER}/file/upload", files=files, headers=headers)
     if response.ok:
         typer.echo(f"File uploaded successfully as '{final_name}'.")
     else:
@@ -78,6 +78,7 @@ def delete(file_name: str):
 # List files in the "cloud" storage
 @app.command()
 def list():
+    """List all files in cloud storage"""
     if NOSERVER:
         typer.echo("Listing files.")
         return
@@ -89,8 +90,24 @@ def list():
         files = response.json()
         if files:
             typer.echo("Files in cloud storage:")
+            typer.echo("-" * 80)
+            typer.echo(f"{'ID':<5} | {'Name':<30} | {'Size':<10} | {'Uploaded'}")
+            typer.echo("-" * 80)
             for file in files:
-                typer.echo(f"- {file}")
+                file_id = file.get('id', 'N/A')
+                name = file.get('name', 'Unknown')
+                size = file.get('size', 0)
+                timestamp = file.get('timestamp', 'Unknown')
+                
+                # Format size
+                if size < 1024:
+                    size_str = f"{size} B"
+                elif size < 1024 * 1024:
+                    size_str = f"{size/1024:.1f} KB"
+                else:
+                    size_str = f"{size/(1024*1024):.1f} MB"
+                
+                typer.echo(f"{file_id:<5} | {name:<30} | {size_str:<10} | {timestamp}")
         else:
             typer.echo("No files found in cloud storage.")
     else:

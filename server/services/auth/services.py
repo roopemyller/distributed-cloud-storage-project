@@ -103,3 +103,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+def get_user_from_token(token: str, db: Session):
+    """Extract user from JWT token"""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        user = get_user(db, username=username)
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return user
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Could not validate credentials: {str(e)}")
