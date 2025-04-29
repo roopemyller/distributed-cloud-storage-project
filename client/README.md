@@ -1,4 +1,8 @@
 
+# Client with Typer
+
+Start a new terminal from client directory and run the following commands in it
+
 ### Create .venv under the client
 
 `python -m venv .venv`

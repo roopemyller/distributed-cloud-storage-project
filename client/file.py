@@ -61,6 +61,10 @@ def download(
     Download a file from cloud storage
     """
     
+    if not os.path.exists(save_path):
+        typer.echo(f"Path {save_path} does not exist.")
+        raise typer.Exit()
+
     headers = get_auth_headers()
     params = {"file_name": file_name}
     response = requests.get(f"{SERVER}/file/download", params=params, headers=headers)
