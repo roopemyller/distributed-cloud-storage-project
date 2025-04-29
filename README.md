@@ -1,5 +1,13 @@
-# distributed-cloud-storage-project
+# Distributed-cloud-storage-project
 
-## Install requirements
+## Server
 
-`pip install -r requirements.txt`
+Server with FastAPI and PostgreSQL
+
+See instructions in `server/README.md`
+
+## Client
+
+Python CLI application with Typer
+
+See instruction in `client/README.md`
