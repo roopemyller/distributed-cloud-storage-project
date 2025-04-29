@@ -7,13 +7,25 @@ SERVER = "http://localhost:8000" # Replace with REAL server URL
 
 # Register user
 @app.command()
-def register(username: str, email: str, password: str):
+def register(
+    username: str,
+    email: str,
+    password: str,
+    admin: bool = typer.Option(
+        False, 
+        "--admin",
+        "-a",
+        help="Register as admin user"
+        ), 
+    ):
 
     """
     Register a new user
     """
     
-    payload = {"username": username, "email": email, "password": password}
+    role = "admin" if admin else "user"
+
+    payload = {"username": username, "email": email, "password": password, "role": role}
     response = requests.post(f"{SERVER}/auth/register", json=payload)
     if response.ok:
         typer.echo("User registered successfully.")
