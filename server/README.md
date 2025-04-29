@@ -23,11 +23,13 @@ or
 Create a `.env` file in the server directory, and then create fields for `SECRET_KEY`, `DATABASE_URL` and `ACCESS_TOKEN_EXPIRE_MINUTES`.
 
 Example:
+
 ```
 SECRET_KEY="1234"
 DATABASE_URL="postgresql://myuser:mypassword@localhost/database"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
+
 Replace fields "myuser", "mypassword" and "database" with the info from your local PostgreSQL.
 
 ### Run server with fastapi

@@ -1,7 +1,7 @@
 from typing import Annotated
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Query
-from .services import auth_router, file_router
+from .services import auth_router, file_router, admin_router
 from .utils import Database
 from .models.models import Base
 
@@ -17,6 +17,7 @@ async def lifespan(app):
 app = FastAPI(lifespan = lifespan)
 app.include_router(auth_router, prefix='/auth', tags=['Authentication'])
 app.include_router(file_router, prefix='/file', tags=['File'])
+app.include_router(admin_router, prefix='/admin', tags=['Admin'])
 
 @app.get("/")
 async def read_root():

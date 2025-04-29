@@ -1,8 +1,7 @@
-import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from ..config import settings
 
 Base = declarative_base()
 
@@ -20,9 +19,7 @@ class Database:
         if self._initialized:
             return
 
-        load_dotenv()
-
-        self.postgres_url = os.getenv("DATABASE_URL")
+        self.postgres_url = settings.DATABASE_URL
         self.engine = create_engine(self.postgres_url, echo=True)
         self._initialized = True
 

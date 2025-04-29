@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 from typing import Dict, Any
 
-from server.config import settings
+from ...config import settings
 
 class FileUploadResponse(BaseModel):
     message: str

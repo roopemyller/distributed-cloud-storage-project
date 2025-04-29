@@ -1,21 +1,22 @@
-import os
-from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from sqlalchemy.orm import Session
 
-from server.utils import Database
-from server.config import settings
+from ...utils import Database
+from ...config import settings
+from ...models import User, File
 
 from .services import (
     authenticate_user, 
     create_access_token, 
     create_user, 
-    get_current_user, 
+    get_current_user,
+    require_role,
     Token, 
     UserCreate, 
-    UserResponse
+    UserResponse,
+    FileResponse
 )
 
 router = APIRouter()
@@ -33,7 +34,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username},
+        expires_delta=access_token_expires,
+        user_role=user.role
     )
     return {"access_token": access_token, "token_type": "bearer"}
 

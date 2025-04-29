@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from pydantic import BaseModel
 
-from server.models import User
-from server.utils import Database, check_token_validity, decode_token
-from server.config import settings
+from ...models import User
+from ...utils import Database, check_token_validity, decode_token
+from ...config import settings
 
 db = Database()
 
@@ -27,17 +27,27 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+    role: Optional[str] = None
 
 class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    role: str
 
 class UserResponse(BaseModel):
     id: int
     username: str
     email: str
     role: str
+
+class FileResponse(BaseModel):
+    id: int
+    name: str
+    size: int
+    owner_id: str
+    owner_username: str
+    timestamp: datetime
 
 # Helper functions
 def verify_password(plain_password, hashed_password):
@@ -58,7 +68,7 @@ def create_user(db: Session, user: UserCreate):
         username=user.username,
         email=user.email,
         password_hash=get_password_hash(user.password),
-        role="user"
+        role=user.role
     )
     db.add(db_user)
     db.commit()
@@ -74,7 +84,7 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None, user_role: str = None):
     """Create a JWT access token."""
     to_encode = data.copy()
     if expires_delta:
@@ -82,6 +92,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
+
+    # Add role information to the token
+    if user_role:
+        to_encode.update({"role": user_role})
+
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
     return encoded_jwt
 
@@ -119,3 +134,48 @@ def get_user_from_token(token: str, db: Session):
         return user
     except JWTError as e:
         raise HTTPException(status_code=401, detail=f"Could not validate credentials: {str(e)}")
+
+def require_role(required_role: str):
+    """Dependency to check if the user has the required role."""
+    def role_checker(token: str = Depends(oauth2_scheme), db: Session = Depends(db.get_db)):
+        if not check_token_validity(token):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            username: str = payload.get("sub")
+            user_role: str = payload.get("role")
+            
+            if not username or not user_role:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token content",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+                
+            if user_role != required_role:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Role '{required_role}' required for this operation",
+                )
+                
+            user = get_user(db, username=username)
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found",
+                )
+                
+            return user
+        except JWTError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+    return role_checker
