@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 
-from server.config import settings
+from ..config import settings
 
 class TokenData(BaseModel):
     username: Optional[str] = None
