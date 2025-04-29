@@ -89,3 +89,34 @@ async def list_all_files(
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
+
+@router.delete('/admin/users/{user_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: int,
+    _current_user = Depends(require_role("admin")),
+    db: Session = Depends(db.get_db)
+):
+    """Delete a user (admin only)."""
+    # Prevent admins from deleting themselves
+    if _current_user.id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account"
+        )
+    
+    # Find the user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} not found"
+        )
+    
+    # Delete any files owned by this user (optional, could also transfer ownership)
+    db.query(File).filter(File.owner_id == str(user_id)).delete()
+    
+    # Delete the user
+    db.delete(user)
+    db.commit()
+    
+    return None  # 204 No Content response doesn't need a body
