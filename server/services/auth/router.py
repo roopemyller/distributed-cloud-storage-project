@@ -5,8 +5,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from sqlalchemy.orm import Session
 
-from server.utils import Database
-from server.config import settings
+from ...utils import Database
+from ...config import settings
 
 from .services import (
     authenticate_user, 
