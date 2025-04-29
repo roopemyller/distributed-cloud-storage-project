@@ -5,16 +5,14 @@ from utils import save_token, remove_token
 app = typer.Typer()
 SERVER = "http://localhost:8000" # Replace with REAL server URL
 
-NOSERVER = False # client dev phase
-
 # Register user
 @app.command()
 def register(username: str, email: str, password: str):
 
-    if NOSERVER:
-        typer.echo(f"Registering user {username}.")
-        return
-
+    """
+    Register a new user
+    """
+    
     payload = {"username": username, "email": email, "password": password}
     response = requests.post(f"{SERVER}/auth/register", json=payload)
     if response.ok:
@@ -26,9 +24,9 @@ def register(username: str, email: str, password: str):
 @app.command()
 def login(username: str, password: str):
 
-    if NOSERVER:
-        typer.echo(f"Login user {username}.")
-        return
+    """
+    Login user
+    """
 
     payload = {"username": username, "password": password}
     response = requests.post(f"{SERVER}/auth/login", data=payload)
@@ -45,9 +43,10 @@ def login(username: str, password: str):
 # Logout user and remove token
 @app.command()
 def logout():
-    if NOSERVER:
-        typer.echo("Logging out user.")
-        return
+
+    """
+    Logout user
+    """
 
     remove_token()
     typer.echo("User logged out successfully.")

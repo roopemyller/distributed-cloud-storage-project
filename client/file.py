@@ -7,8 +7,6 @@ app = typer.Typer()
 SERVER = "http://localhost:8000" # Replace with REAL server URL
 TOKEN_FILE = ".token"
 
-NOSERVER = False # client dev phase
-
 def get_auth_headers():
     token = load_token()
     if not token:
@@ -18,17 +16,25 @@ def get_auth_headers():
 
 # Upload file to the "cloud" storage
 @app.command()
-def upload(file_path: str, save_name: str=typer.Option(None, "--save-name", "-s", help="Name to save the file as in the cloud.")):
-    if NOSERVER:
-        typer.echo(f"Uploading file '{file_path}'.")
-        return
-
+def upload(
+    file_path: str, 
+    save_name: str=typer.Option(
+        None, 
+        "--save-name", 
+        "-s", 
+        help="Name to save the file as in the cloud. Default is the original file name."
+        )
+    ):
+    
+    """
+    Upload a file to cloud storage
+    """
+     
     if not os.path.exists(file_path):
         typer.echo(f"File {file_path} does not exist.")
         raise typer.Exit()
     
     headers = get_auth_headers()
-
     final_name = save_name if save_name else os.path.basename(file_path)
 
     with open(file_path, "rb") as f:
@@ -41,13 +47,21 @@ def upload(file_path: str, save_name: str=typer.Option(None, "--save-name", "-s"
 
 # Download file from the "cloud" storage
 @app.command()
-def download(file_name: str, save_path: str=typer.Option(".", "--save-path", "-p", help="Path to save the downloaded file.")):
-    if NOSERVER:
-        typer.echo(f"Downloading file '{file_name}' to '{save_path}'.")
-        return
-
+def download(
+    file_name: str, 
+    save_path: str=typer.Option(
+        ".", 
+        "--save-path", 
+        "-p", 
+        help="Path to save the downloaded file."
+        )
+    ):
+    
+    """
+    Download a file from cloud storage
+    """
+    
     headers = get_auth_headers()
-
     params = {"file_name": file_name}
     response = requests.get(f"{SERVER}/file/download", params=params, headers=headers)
     if response.ok:
@@ -62,12 +76,12 @@ def download(file_name: str, save_path: str=typer.Option(".", "--save-path", "-p
 # Delete file from the "cloud" storage
 @app.command()
 def delete(file_name: str):
-    if NOSERVER:
-        typer.echo(f"Deleting file '{file_name}'.")
-        return
+    
+    """
+    Delete a file from cloud storage
+    """
 
     headers = get_auth_headers()
-
     params = {"file_name": file_name}
     response = requests.delete(f"{SERVER}/file/delete", params=params, headers=headers)
     if response.ok:
@@ -78,13 +92,12 @@ def delete(file_name: str):
 # List files in the "cloud" storage
 @app.command()
 def list():
-    """List all files in cloud storage"""
-    if NOSERVER:
-        typer.echo("Listing files.")
-        return
+    
+    """
+    List all files in cloud storage
+    """
 
     headers = get_auth_headers()
-
     response = requests.get(f"{SERVER}/file/list", headers=headers)
     if response.ok:
         files = response.json()
