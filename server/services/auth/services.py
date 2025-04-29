@@ -41,6 +41,14 @@ class UserResponse(BaseModel):
     email: str
     role: str
 
+class FileResponse(BaseModel):
+    id: int
+    name: str
+    size: int
+    owner_id: str
+    owner_username: str
+    timestamp: datetime
+
 # Helper functions
 def verify_password(plain_password, hashed_password):
     """Verify a plain password against a hashed password."""

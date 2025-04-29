@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ...utils import Database
 from ...config import settings
-from ...models import User
+from ...models import User, File
 
 from .services import (
     authenticate_user, 
@@ -15,7 +15,8 @@ from .services import (
     require_role,
     Token, 
     UserCreate, 
-    UserResponse
+    UserResponse,
+    FileResponse
 )
 
 router = APIRouter()
@@ -58,3 +59,33 @@ async def list_all_users(
     """List all users (admin only)."""
     users = db.query(User).all()
     return users
+
+@router.get('/admin/files', response_model=list[FileResponse])
+async def list_all_files(
+    _current_user = Depends(require_role("admin")),
+    db: Session = Depends(db.get_db)
+):
+    """List all files in the system (admin only)."""
+    try:
+        # Get all files from the database
+        files = db.query(File).all()
+
+        # Get all users for reference
+        users = db.query(User).all()
+
+        # Create a dictionary to map user IDs to usernames
+        user_dict = {str(user.id): user.username for user in users}
+
+        # Format response with user information
+        return [
+            FileResponse(
+                id=file.id,
+                name=file.file_name,
+                size=file.file_size,
+                owner_id=file.owner_id,
+                owner_username=user_dict.get(str(file.owner_id), "Unknown"),
+                timestamp=file.timestamp,
+            ) for file in files
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
