@@ -32,6 +32,7 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    role: str
 
 class UserResponse(BaseModel):
     id: int
@@ -58,7 +59,7 @@ def create_user(db: Session, user: UserCreate):
         username=user.username,
         email=user.email,
         password_hash=get_password_hash(user.password),
-        role="user"
+        role=user.role
     )
     db.add(db_user)
     db.commit()
