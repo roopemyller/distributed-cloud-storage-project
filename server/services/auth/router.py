@@ -5,12 +5,14 @@ from sqlalchemy.orm import Session
 
 from ...utils import Database
 from ...config import settings
+from ...models import User
 
 from .services import (
     authenticate_user, 
     create_access_token, 
     create_user, 
-    get_current_user, 
+    get_current_user,
+    require_role,
     Token, 
     UserCreate, 
     UserResponse
@@ -31,7 +33,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username},
+        expires_delta=access_token_expires,
+        user_role=user.role
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -45,3 +49,12 @@ async def register(user: UserCreate, db: Session = Depends(db.get_db)):
 async def get_user_me(current_user = Depends(get_current_user)):
     """Get the current authenticated user."""
     return current_user
+
+@router.get('/admin/users', response_model=list[UserResponse])
+async def list_all_users(
+    _current_user = Depends(require_role("admin")),
+    db: Session = Depends(db.get_db)
+):
+    """List all users (admin only)."""
+    users = db.query(User).all()
+    return users

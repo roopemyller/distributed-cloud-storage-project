@@ -26,9 +26,10 @@ def decode_token(token: str) -> TokenData:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         username: str = payload.get("sub")
+        role: str = payload.get("role")
         if username is None:
             raise credentials_exception
-        return TokenData(username=username)
+        return TokenData(username=username, role=role)
     except JWTError:
         raise credentials_exception
 
