@@ -124,9 +124,9 @@ async def download(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File download failed: {str(e)}")
 
-@router.delete('/delete')
+@router.delete('/{file_id}')
 async def delete(
-    file_name: str,
+    file_id: int,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(Database.get_db)
 ):
@@ -140,7 +140,7 @@ async def delete(
         # Find the file in database
         file = db.query(File).filter(
             File.owner_id == str(user.id),
-            File.file_name == file_name
+            File.id == file_id
         ).first()
         
         if not file:
@@ -154,6 +154,6 @@ async def delete(
         db.delete(file)
         db.commit()
         
-        return {"message": f"File {file_name} deleted successfully"}
+        return {"message": f"File with file_id {file_id} deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File deletion failed: {str(e)}")

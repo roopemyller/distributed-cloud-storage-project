@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import os
 
 from ...utils import Database
 from ...models import User, File
@@ -80,3 +81,38 @@ async def list_all_files(
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
+
+@router.delete('/files/{file_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_file(
+    file_id: int,
+    _current_user = Depends(require_role("admin")),
+    db: Session = Depends(db.get_db)
+):
+    """Delete a file from the system (admin only)."""
+    # Find the file
+    file = db.query(File).filter(File.id == file_id).first()
+    if not file:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File with ID {file_id} not found"
+        )
+    
+    try:
+        # Get the file path from the database
+        file_path = file.path
+
+        # Delete the physical file if it exists
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        # Delete the file record from database
+        db.delete(file)
+        db.commit()
+        
+        return None
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting file: {str(e)}"
+        )
