@@ -2,9 +2,11 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import FileResponse
-import os
 from sqlmodel import Session
 from typing import List
+from datetime import datetime
+import os
+import uuid
 
 from ...utils import Database
 from ...models.models import File
@@ -34,11 +36,16 @@ async def upload(
         # Read file content
         contents = await file.read()
         file_size = len(contents)
-        
-          # Save file to disk
-        upload_dir = "uploads"
+
+        # Create a unique filename with UUID
+        original_filename = file.filename
+        file_extension = os.path.splitext(original_filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+
+        # Save file to disk in user-specific folder
+        upload_dir = os.path.join("uploads", str(user.id))
         os.makedirs(upload_dir, exist_ok=True)
-        file_path = os.path.join(upload_dir, file.filename)
+        file_path = os.path.join(upload_dir, unique_filename)
         
         with open(file_path, "wb") as f:
             f.write(contents)
