@@ -100,60 +100,129 @@ def download(
 
 # Delete file from the "cloud" storage
 @app.command()
-def delete(file_name: str):
+def delete(
+    file_name: str, # Change file_name to file_id after backend update
+    admin: bool=typer.Option(
+        False,
+        "--admin",
+        "-a",
+        help="Delete file as admin (admin only)."
+        )
+    ):
     
     """
     Delete a file from cloud storage
+
+    Admin can delete any file with tag --admin or -a
+    User can delete only their own files
     """
 
     headers = get_auth_headers()
-    params = {"file_name": file_name}
-    response = requests.delete(f"{SERVER}/file/delete", params=params, headers=headers)
+    params = {"file_name": file_name}  
+ 
+    if admin:
+        # Admin delete
+        response = requests.delete(f"{SERVER}/admin/files/{file_name}", headers=headers) # Change file_name to file_id after backend update
+    else:
+        response = requests.delete(f"{SERVER}/file/delete", params=params, headers=headers)
+
     if response.ok:
         typer.echo(f"File {file_name} deleted successfully.")
+    elif response.status_code == 403:
+        typer.echo("Permission denied. You can only delete your own files.")
+    elif response.status_code == 404:
+        typer.echo(f"File {file_name} not found.")
     else:
         typer.echo(f"Failed to delete file: {response.text}")
 
 # List files in the "cloud" storage
 @app.command()
-def list():
+def list(
+    admin: bool=typer.Option(
+        False, 
+        "--admin", 
+        "-a", 
+        help="List all files (admin only)."
+        )
+    ):
     
     """
     List all files in cloud storage
+
+    Admin can view all files with tag --admin or -a
+    User can view only their own files
     """
 
     headers = get_auth_headers()
-    response = requests.get(f"{SERVER}/file/list", headers=headers)
 
-    if response.ok:
-        files = response.json()
-        if files:
-            typer.echo("Files in cloud storage:")
-            typer.echo("-" * 80)
-            typer.echo(f"{'ID':<5} | {'Name':<30} | {'Size':<10} | {'Uploaded'}")
-            typer.echo("-" * 80)
-            for file in files:
-                file_id = file.get('id', 'N/A')
-                name = file.get('name', 'Unknown')
-                size = file.get('size', 0)
-                timestamp = file.get('timestamp', 'Unknown')
-                
-                try:
-                    timestamp_dt = datetime.fromisoformat(timestamp)
-                    timestamp_str = timestamp_dt.strftime("%d.%m.%Y %H:%M:%S")
-                except ValueError:
-                    timestamp_str = "Invalid timestamp"
+    if admin:
+        # Admin view
+        response = requests.get(f"{SERVER}/admin/files", headers=headers)
+        if response.ok:
+            files = response.json()
+            if files:
+                typer.echo("Files in cloud storage:")
+                typer.echo("-" * 80)
+                typer.echo(f"{'ID':<5} | {'Owner':<10} | {'Name':<30} | {'Size':<10} | {'Uploaded'}")
+                typer.echo("-" * 80)
+                for file in files:
+                    file_id = file.get('id', 'N/A')
+                    file_owner = file.get('owner_username', 'Unknown')
+                    name = file.get('name', 'Unknown')
+                    size = file.get('size', 0)
+                    timestamp = file.get('timestamp', 'Unknown')
+                    
+                    try:
+                        timestamp_dt = datetime.fromisoformat(timestamp)
+                        timestamp_str = timestamp_dt.strftime("%d.%m.%Y %H:%M:%S")
+                    except ValueError:
+                        timestamp_str = "Invalid timestamp"
 
-                # Format size
-                if size < 1024:
-                    size_str = f"{size} B"
-                elif size < 1024 * 1024:
-                    size_str = f"{size/1024:.1f} KB"
-                else:
-                    size_str = f"{size/(1024*1024):.1f} MB"
-                
-                typer.echo(f"{file_id:<5} | {name:<30} | {size_str:<10} | {timestamp_str}")
+                    # Format size
+                    if size < 1024:
+                        size_str = f"{size} B"
+                    elif size < 1024 * 1024:
+                        size_str = f"{size/1024:.1f} KB"
+                    else:
+                        size_str = f"{size/(1024*1024):.1f} MB"
+                    
+                    typer.echo(f"{file_id:<5} | {file_owner:<10} | {name:<30} | {size_str:<10} | {timestamp_str}")
+            else:
+                typer.echo("No files found in cloud storage.")
         else:
-            typer.echo("No files found in cloud storage.")
+            typer.echo(f"Failed to list files: {response.text}")
     else:
-        typer.echo(f"Failed to list files: {response.text}")
+        # User view
+        response = requests.get(f"{SERVER}/file/list", headers=headers)
+        if response.ok:
+            files = response.json()
+            if files:
+                typer.echo("Files in cloud storage:")
+                typer.echo("-" * 80)
+                typer.echo(f"{'ID':<5} | {'Name':<30} | {'Size':<10} | {'Uploaded'}")
+                typer.echo("-" * 80)
+                for file in files:
+                    file_id = file.get('id', 'N/A')
+                    name = file.get('name', 'Unknown')
+                    size = file.get('size', 0)
+                    timestamp = file.get('timestamp', 'Unknown')
+                    
+                    try:
+                        timestamp_dt = datetime.fromisoformat(timestamp)
+                        timestamp_str = timestamp_dt.strftime("%d.%m.%Y %H:%M:%S")
+                    except ValueError:
+                        timestamp_str = "Invalid timestamp"
+
+                    # Format size
+                    if size < 1024:
+                        size_str = f"{size} B"
+                    elif size < 1024 * 1024:
+                        size_str = f"{size/1024:.1f} KB"
+                    else:
+                        size_str = f"{size/(1024*1024):.1f} MB"
+                    
+                    typer.echo(f"{file_id:<5} | {name:<30} | {size_str:<10} | {timestamp_str}")
+            else:
+                typer.echo("No files found in cloud storage.")
+        else:
+            typer.echo(f"Failed to list files: {response.text}")
