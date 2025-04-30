@@ -52,7 +52,7 @@ def upload(
         file_content = b"".join(chunks)
         
         files = {"file": (final_name, file_content, "application/octet-stream")}
-        response = requests.post(f"{SERVER}/file/upload", files=files, headers=headers)
+        response = requests.post(f"{SERVER}/files/upload", files=files, headers=headers)
 
     if response.ok:
         typer.echo(f"File uploaded successfully as '{final_name}'.")
@@ -81,7 +81,7 @@ def download(
 
     headers = get_auth_headers()
     params = {"file_name": file_name}
-    response = requests.get(f"{SERVER}/file/download", params=params, headers=headers, stream=True)
+    response = requests.get(f"{SERVER}/files/download", params=params, headers=headers, stream=True)
 
     if response.ok:
         file_save_path = os.path.join(save_path, file_name)
@@ -124,7 +124,7 @@ def delete(
         # Admin delete
         response = requests.delete(f"{SERVER}/admin/files/{file_name}", headers=headers) # Change file_name to file_id after backend update
     else:
-        response = requests.delete(f"{SERVER}/file/delete", params=params, headers=headers)
+        response = requests.delete(f"{SERVER}/files/delete", params=params, headers=headers)
 
     if response.ok:
         typer.echo(f"File {file_name} deleted successfully.")
@@ -193,7 +193,7 @@ def list(
             typer.echo(f"Failed to list files: {response.text}")
     else:
         # User view
-        response = requests.get(f"{SERVER}/file/list", headers=headers)
+        response = requests.get(f"{SERVER}/files/list", headers=headers)
         if response.ok:
             files = response.json()
             if files:
