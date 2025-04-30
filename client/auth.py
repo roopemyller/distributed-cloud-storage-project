@@ -49,6 +49,8 @@ def login(username: str, password: str):
             return
         save_token(token)
         typer.echo(f"User {username} logged in successfully.")
+    elif response.status_code == 401:
+        typer.echo("Invalid username or password.")
     else:
         typer.echo(f"Failed to log in: {response.text}")
 
