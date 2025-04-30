@@ -1,5 +1,5 @@
 admin
 auth
-file
+files
 main
 utils

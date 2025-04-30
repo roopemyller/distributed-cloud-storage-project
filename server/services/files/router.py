@@ -2,9 +2,11 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import FileResponse
-import os
 from sqlmodel import Session
 from typing import List
+from datetime import datetime
+import os
+import uuid
 
 from ...utils import Database
 from ...models.models import File
@@ -34,11 +36,16 @@ async def upload(
         # Read file content
         contents = await file.read()
         file_size = len(contents)
-        
-          # Save file to disk
-        upload_dir = "uploads"
+
+        # Create a unique filename with UUID
+        original_filename = file.filename
+        file_extension = os.path.splitext(original_filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+
+        # Save file to disk in user-specific folder
+        upload_dir = os.path.join("uploads", str(user.id))
         os.makedirs(upload_dir, exist_ok=True)
-        file_path = os.path.join(upload_dir, file.filename)
+        file_path = os.path.join(upload_dir, unique_filename)
         
         with open(file_path, "wb") as f:
             f.write(contents)
@@ -124,9 +131,9 @@ async def download(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File download failed: {str(e)}")
 
-@router.delete('/delete')
+@router.delete('/{file_id}')
 async def delete(
-    file_name: str,
+    file_id: int,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(Database.get_db)
 ):
@@ -140,7 +147,7 @@ async def delete(
         # Find the file in database
         file = db.query(File).filter(
             File.owner_id == str(user.id),
-            File.file_name == file_name
+            File.id == file_id
         ).first()
         
         if not file:
@@ -154,6 +161,6 @@ async def delete(
         db.delete(file)
         db.commit()
         
-        return {"message": f"File {file_name} deleted successfully"}
+        return {"message": f"File with file_id {file_id} deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File deletion failed: {str(e)}")

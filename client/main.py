@@ -1,7 +1,7 @@
 
 import typer
 import auth
-import file
+import files
 import admin
 
 app = typer.Typer()
@@ -10,10 +10,10 @@ app.command()(auth.register)
 app.command()(auth.login)
 app.command()(auth.logout)
 
-app.command()(file.upload)
-app.command()(file.download)
-app.command()(file.delete)
-app.command()(file.list)
+app.command()(files.upload)
+app.command()(files.download)
+app.command()(files.delete)
+app.command()(files.list)
 
 app.command()(admin.list_users)
 app.command()(admin.delete_user)
