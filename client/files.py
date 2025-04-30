@@ -113,7 +113,7 @@ def delete(
     """
     Delete a file from cloud storage
 
-    Admin can delete any file with tag --admin or -aad
+    Admin can delete any file with tag --admin or -a
     User can delete only their own files
     """
 
