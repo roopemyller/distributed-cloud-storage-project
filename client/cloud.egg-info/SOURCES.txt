@@ -1,7 +1,7 @@
 README.md
 admin.py
 auth.py
-file.py
+files.py
 main.py
 setup.py
 utils.py

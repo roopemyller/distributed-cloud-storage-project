@@ -101,7 +101,7 @@ def download(
 # Delete file from the "cloud" storage
 @app.command()
 def delete(
-    file_name: str, # Change file_name to file_id after backend update
+    file_id: int,
     admin: bool=typer.Option(
         False,
         "--admin",
@@ -118,20 +118,20 @@ def delete(
     """
 
     headers = get_auth_headers()
-    params = {"file_name": file_name}  
+    params = {"file_id": file_id}  
  
     if admin:
         # Admin delete
-        response = requests.delete(f"{SERVER}/admin/files/{file_name}", headers=headers) # Change file_name to file_id after backend update
+        response = requests.delete(f"{SERVER}/admin/files/{file_id}", headers=headers)
     else:
-        response = requests.delete(f"{SERVER}/files/delete", params=params, headers=headers)
+        response = requests.delete(f"{SERVER}/files/{file_id}", headers=headers)
 
     if response.ok:
-        typer.echo(f"File {file_name} deleted successfully.")
+        typer.echo(f"File with file_id {file_id} deleted successfully.")
     elif response.status_code == 403:
         typer.echo("Permission denied. You can only delete your own files.")
     elif response.status_code == 404:
-        typer.echo(f"File {file_name} not found.")
+        typer.echo(f"File with file_id {file_id} not found.")
     else:
         typer.echo(f"Failed to delete file: {response.text}")
 
