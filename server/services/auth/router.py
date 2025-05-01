@@ -43,7 +43,20 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 @router.post('/register', response_model=UserResponse)
 async def register(user: UserCreate, db: Session = Depends(db.get_db)):
     """Register a new user."""
-    db_user = create_user(db, user)
+    try:
+        # Check if the user already exists
+        existing_user = db.query(User).filter(User.username == user.username).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already registered",
+            )
+        db_user = create_user(db, user)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
     return db_user
 
 @router.get('/me', response_model=UserResponse)

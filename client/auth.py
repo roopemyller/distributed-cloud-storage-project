@@ -29,6 +29,9 @@ def register(
     response = requests.post(f"{SERVER}/auth/register", json=payload)
     if response.ok:
         typer.echo("User registered successfully.")
+    elif response.status_code == 400:
+        error_message = response.json().get("detail", "Unknown error")
+        typer.echo(f"Failed to register user: {error_message}")
     else:
         typer.echo(f"Failed to register user: {response.text}")
 

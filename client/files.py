@@ -56,6 +56,12 @@ def upload(
 
     if response.ok:
         typer.echo(f"File uploaded successfully as '{final_name}'.")
+    elif response.status_code == 500:
+        error_message = response.json().get("detail", "Unknown error")
+        if "401" in error_message:
+            typer.echo("Authentication failed. Please log in again.")
+        else:
+            typer.echo(f"Failed to upload file: {error_message}")
     else:
         typer.echo(f"Failed to upload file: {response.text}")
 
@@ -95,6 +101,12 @@ def download(
                 progress.update(len(chunk))
 
         typer.echo(f"File downloaded successfully to {file_save_path}.")
+    elif response.status_code == 500:
+        error_message = response.json().get("detail", "Unknown error")
+        if "401" in error_message:
+            typer.echo("Authentication failed. Please log in again.")
+        else:
+            typer.echo(f"Failed to upload file: {error_message}")
     else:
         typer.echo(f"Failed to download file: {response.text}")
 
@@ -128,6 +140,12 @@ def delete(
 
     if response.ok:
         typer.echo(f"File with file_id {file_id} deleted successfully.")
+    elif response.status_code == 500:
+        error_message = response.json().get("detail", "Unknown error")
+        if "401" in error_message:
+            typer.echo("Authentication failed. Please log in again.")
+        else: 
+            typer.echo(f"Failed to delete file: {error_message}")
     elif response.status_code == 403:
         typer.echo("Permission denied. You can only delete your own files.")
     elif response.status_code == 404:
@@ -189,6 +207,8 @@ def list(
                     typer.echo(f"{file_id:<5} | {file_owner:<10} | {name:<30} | {size_str:<10} | {timestamp_str}")
             else:
                 typer.echo("No files found in cloud storage.")
+        elif response.status_code == 401:
+            typer.echo("Authentication failed. Please log in again.")   
         else:
             typer.echo(f"Failed to list files: {response.text}")
     else:
@@ -224,5 +244,7 @@ def list(
                     typer.echo(f"{file_id:<5} | {name:<30} | {size_str:<10} | {timestamp_str}")
             else:
                 typer.echo("No files found in cloud storage.")
+        elif response.status_code == 401:
+            typer.echo("Authentication failed. Please log in again.")
         else:
             typer.echo(f"Failed to list files: {response.text}")

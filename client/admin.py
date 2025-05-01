@@ -41,6 +41,8 @@ def list_users():
                 typer.echo(f"{user_id:<5} | {username:<20} | {email:<30} | {role}")
         else:
             typer.echo("No users found.")
+    elif response.status_code == 401:
+        typer.echo("Unauthorized: Please log in to access this information.")
     elif response.status_code == 403:
         typer.echo("Access denied: You do not have permission to view this information.")
     else:
@@ -61,6 +63,8 @@ def delete_user(user_id: int):
 
     if response.ok:
         typer.echo(f"User with ID {user_id} deleted successfully.")
+    elif response.status_code == 401:
+        typer.echo("Unauthorized: Please log in to perform this action.")
     elif response.status_code == 403:
         typer.echo("Access denied: You do not have permission to perform this action.")
     elif response.status_code == 404:
