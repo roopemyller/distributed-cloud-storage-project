@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timezone
 
@@ -21,5 +21,5 @@ class File(Base):
     owner_id = Column(String)
     file_name = Column(String, index=True)
     path = Column(String, index=True)
-    size = Column(Integer)
+    size = Column(BigInteger)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))

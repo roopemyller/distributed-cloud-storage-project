@@ -1,6 +1,8 @@
 import typer
 import requests
 import os
+import threading
+import sys
 from datetime import datetime
 from utils import load_token
 from tqdm import tqdm
@@ -16,20 +18,9 @@ def get_auth_headers():
         raise typer.Exit()
     return {"Authorization": f"Bearer {token}"}
 
-# Upload file to the "cloud" storage
-@app.command()
-def upload(
-    file_path: str, 
-    save_name: str=typer.Option(
-        None, 
-        "--save-name", 
-        "-s", 
-        help="Name to save the file as in the cloud. Default is the original file name."
-        )
-    ):
-    
-    """
-    Upload a file to cloud storage
+def upload_file(file_path: str, save_name: str):
+    """ 
+    Function to upload a file to the server    
     """
      
     if not os.path.exists(file_path):
@@ -43,14 +34,12 @@ def upload(
     with open(file_path, "rb") as f, tqdm(
         total=file_size, unit="B", unit_scale=True, desc=f"Uploading {final_name}",
     ) as progress:
-        
         chunks = []
         for chunk in iter(lambda: f.read(8192), b""):
             progress.update(len(chunk))
             chunks.append(chunk)
 
         file_content = b"".join(chunks)
-        
         files = {"file": (final_name, file_content, "application/octet-stream")}
         response = requests.post(f"{SERVER}/files/upload", files=files, headers=headers)
 
@@ -65,22 +54,29 @@ def upload(
     else:
         typer.echo(f"Failed to upload file: {response.text}")
 
-# Download file from the "cloud" storage
+# Upload file to the "cloud" storage using threading
 @app.command()
-def download(
-    file_name: str, 
-    save_path: str=typer.Option(
-        ".", 
-        "--save-path", 
-        "-p", 
-        help="Path to save the downloaded file."
+def upload(
+    file_path: str, 
+    save_name: str=typer.Option(
+        None, 
+        "--save-name", 
+        "-s", 
+        help="Name to save the file as in the cloud. Default is the original file name."
         )
     ):
-    
     """
-    Download a file from cloud storage
+    Upload a file to cloud storage
     """
+
+    thread = threading.Thread(target=upload_file, args=(file_path, save_name))
+    thread.start()
     
+def download_file(file_name: str, save_path: str):
+    """
+    Function to download a file from the server
+    """
+
     if not os.path.exists(save_path):
         typer.echo(f"Path {save_path} does not exist.")
         raise typer.Exit()
@@ -92,7 +88,6 @@ def download(
     if response.ok:
         file_save_path = os.path.join(save_path, file_name)
         total_size = int(response.headers.get("Content-Length", 0))
-
         with open(file_save_path, "wb") as f, tqdm(
             total=total_size, unit="B", unit_scale=True, desc=f"Downloading {file_name}",
         ) as progress:
@@ -109,6 +104,24 @@ def download(
             typer.echo(f"Failed to upload file: {error_message}")
     else:
         typer.echo(f"Failed to download file: {response.text}")
+
+# Download file from the "cloud" storage
+@app.command()
+def download(
+    file_name: str, 
+    save_path: str=typer.Option(
+        ".", 
+        "--save-path", 
+        "-p", 
+        help="Path to save the downloaded file."
+        )
+    ):
+    
+    """
+    Download a file from cloud storage
+    """
+    thread = threading.Thread(target=download_file, args=(file_name, save_path))
+    thread.start()
 
 # Delete file from the "cloud" storage
 @app.command()
