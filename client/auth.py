@@ -3,9 +3,8 @@ import requests
 from utils import save_token, remove_token
 
 app = typer.Typer()
-SERVER = "http://localhost:8000" # Replace with REAL server URL
+SERVER = "http://localhost:8000"
 
-# Register user
 @app.command()
 def register(
     username: str,
@@ -21,38 +20,48 @@ def register(
 
     """
     Register a new user
+
+    If admin is set to True, the user will be registered as an admin user.
+    Otherwise, the user will be registered as a regular user.
     """
     
+    # Set role based on admin flag
     role = "admin" if admin else "user"
 
+    # Make a request to the server to register the user
     payload = {"username": username, "email": email, "password": password, "role": role}
     response = requests.post(f"{SERVER}/auth/register", json=payload)
-    if response.ok:
+
+    if response.ok: # User registered successfully
         typer.echo("User registered successfully.")
-    elif response.status_code == 400:
+    elif response.status_code == 400: # Bad request
         error_message = response.json().get("detail", "Unknown error")
         typer.echo(f"Failed to register user: {error_message}")
     else:
         typer.echo(f"Failed to register user: {response.text}")
 
-# Login user and save token
 @app.command()
 def login(username: str, password: str):
 
     """
     Login user
+
+    This command will authenticate the user and save the access token to a file.
+    The token will be used for subsequent requests to the server.
     """
 
+    # Make a request to the server to login the user
     payload = {"username": username, "password": password}
     response = requests.post(f"{SERVER}/auth/login", data=payload)
-    if response.ok:
+
+    if response.ok: # User logged in successfully, save token to file
         token = response.json().get("access_token")
         if not token:
             typer.echo("No token received.")
             return
         save_token(token)
         typer.echo(f"User {username} logged in successfully.")
-    elif response.status_code == 401:
+    elif response.status_code == 401: # Invalid credentials, user not found
         typer.echo("Invalid username or password.")
     else:
         typer.echo(f"Failed to log in: {response.text}")
@@ -63,6 +72,8 @@ def logout():
 
     """
     Logout user
+
+    This command will remove the access token from the file.
     """
 
     remove_token()

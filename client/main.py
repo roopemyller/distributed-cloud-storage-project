@@ -4,8 +4,10 @@ import auth
 import files
 import admin
 
+# Create a Typer app instance
 app = typer.Typer()
 
+# Define the commands for the app
 app.command()(auth.register)
 app.command()(auth.login)
 app.command()(auth.logout)

@@ -1,5 +1,6 @@
 from setuptools import setup
 
+# This is the setup script for the cloud client application.
 setup(
     name="cloud",
     version="0.1",
