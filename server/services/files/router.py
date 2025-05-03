@@ -2,7 +2,7 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import FileResponse
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
 import os
