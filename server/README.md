@@ -2,6 +2,10 @@
 
 Start a new terminal from server directory and run the following commands in it
 
+### PostgreSQL setup
+
+Make sure you have PostgreSQL installed and running. You should also create a new database for this project.
+
 ### Create .venv under the client
 
 `python -m venv .venv`
