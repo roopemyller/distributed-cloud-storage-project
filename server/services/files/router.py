@@ -27,6 +27,7 @@ async def upload(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(Database.get_db)
 ):
+    """Upload a file"""
     token = credentials.credentials
     
     try:

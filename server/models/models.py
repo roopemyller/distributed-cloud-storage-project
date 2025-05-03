@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 Base = declarative_base()
 
 class User(Base):
+    """User model for the database."""
     __tablename__ = "user"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -15,6 +16,7 @@ class User(Base):
     role = Column(String, default="user")
 
 class File(Base):
+    """File model for the database."""
     __tablename__ = "file"
     
     id = Column(Integer, primary_key=True, index=True)

@@ -22,26 +22,31 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 # Models
 class Token(BaseModel):
+    """JWT token response model."""
     access_token: str
     token_type: str
 
 class TokenData(BaseModel):
+    """Data model for token payload."""
     username: Optional[str] = None
     role: Optional[str] = None
 
 class UserCreate(BaseModel):
+    """Model for user registration data."""
     username: str
     email: str
     password: str
     role: str
 
 class UserResponse(BaseModel):
+    """Model for user response data."""
     id: int
     username: str
     email: str
     role: str
 
 class FileResponse(BaseModel):
+    """Model for file response data."""
     id: int
     name: str
     size: int
@@ -146,10 +151,15 @@ def require_role(required_role: str):
             )
         
         try:
+            # Decode the token to get the payload
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            
+            # Extract the username and role from the payload
             username: str = payload.get("sub")
             user_role: str = payload.get("role")
             
+            # Check if the username and role are present
+            # If not, raise an HTTPException
             if not username or not user_role:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -157,20 +167,25 @@ def require_role(required_role: str):
                     headers={"WWW-Authenticate": "Bearer"},
                 )
                 
+            # Check if the user has the required role
+            # If not, raise an HTTPException
             if user_role != required_role:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"Role '{required_role}' required for this operation",
                 )
                 
+            # If the user has the required role, retrieve the user from the database
             user = get_user(db, username=username)
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found",
                 )
-                
+            
+            # Return the user object
             return user
+        # Handle JWTError if the token is invalid
         except JWTError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

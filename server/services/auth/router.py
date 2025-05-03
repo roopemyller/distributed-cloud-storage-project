@@ -25,13 +25,18 @@ db = Database()
 @router.post('/login', response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(db.get_db)):
     """Authenticate a user and return an access token."""
+    # Check if the user exists and verify password
     user = authenticate_user(db, form_data.username, form_data.password)
+
+    # If the user does not exist or password is incorrect, raise an error
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Successfully authenticated, create an access token and return it
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username},
@@ -51,6 +56,7 @@ async def register(user: UserCreate, db: Session = Depends(db.get_db)):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already registered",
             )
+        # If not, create the user
         db_user = create_user(db, user)
     except Exception as e:
         raise HTTPException(
